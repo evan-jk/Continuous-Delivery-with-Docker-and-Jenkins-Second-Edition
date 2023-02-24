@@ -3,7 +3,7 @@ package com.leszko.calculator;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-@Service
+@Service /**javadoc comment */
 public class Calculator {
         final static int umlNUMBER1 = 3;
 	@Cacheable("sum")
