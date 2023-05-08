@@ -68,6 +68,7 @@ podTemplate(yaml: '''
               pwd
               cd Chapter09/sample3
               pwd
+              chmod +x gradlew
               ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
               '''
             } catch (Exception E) {
