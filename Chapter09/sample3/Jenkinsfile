@@ -1,4 +1,3 @@
-
 podTemplate(yaml: '''
     apiVersion: v1
     kind: Pod
@@ -43,56 +42,47 @@ podTemplate(yaml: '''
               path: config.json
 ''') {
     node(POD_LABEL) {
-        stage('k8s') {
-            git 'https://github.com/evanjk/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
-            container('gradle') {
-              stage('start the calculator') {
-              sh '''
-              cd /home/jenkins/agent/workspace/test2/Chapter08/sample1
-              curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-              chmod +x ./kubectl
-              ./kubectl apply -f calculator.yaml
-              ./kubectl apply -f hazelcast.yaml
-              sleep 30
-              '''
-              }
-            }
-        }
-        stage('Run pipeline against a gradle project') {
-          // "container" Selects a container of the agent pod so that all shell steps are executed in that container.
-          container('gradle') {
-            stage('Build a gradle project') {
-                  git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
-                  sh '''
-                  cd Chapter09/sample3
-                  chmod +x gradlew
-                  ./gradlew test
-                  '''
-            }
-              stage("Code coverage") {
-                try {
-                  sh '''
-                  curl -ik -H "Authorization: Bearer $(cat/var/run/secrets/kubernetes.io/serviceaccount/token)" https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/api/v1/namespaces/default/pods
-                  pwd
-                     cd Chapter09/sample3
-                  ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
-                  '''
-                } catch (Exception E) {
-                  echo 'Failure detected'
-                }
-              }
-                stage('remove calculator') {
-                  sh'''
-                  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-                  chmod +x ./kubectl
-                  ./kubectl delete service calculator-service
-                  ./kubectl delete service hazelcast
-                  ./kubectl delete deployment hazelcast
-                  ./kubectl delete deployment calculator-deployment
-                  '''
-                }
+      stage('k8s') {
+        git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+        container('gradle') {
+          stage('start the calculator') {
+            sh '''
+            cd /home/jenkins/agent/workspace/test2/Chapter08/sample1
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            ./kubectl apply -f calculator.yaml
+            ./kubectl apply -f hazelcast.yaml
+            sleep 30
+            '''
           }
         }
+      }
+      stage('Run pipeline against a gradle project') {
+        container('gradle') {
+          stage("acceptanceTest") {
+            git 'https://github.com/evan-jk/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+            try {
+              sh '''
+              curl -ik -H "Authorization: Bearer $(cat/var/run/secrets/kubernetes.io/serviceaccount/token)" https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/api/v1/namespaces/default/pods
+              pwd
+              cd Chapter09/sample3
+              ./gradlew acceptanceTest -Dcalculator.url=http://calculator-service:8080
+              '''
+            } catch (Exception E) {
+              echo 'Failure detected'
+            }
+          }
+          stage('remove calculator') {
+            sh'''
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            ./kubectl delete service calculator-service
+            ./kubectl delete service hazelcast
+            ./kubectl delete deployment hazelcast
+            ./kubectl delete deployment calculator-deployment
+            '''
+          }
+        }
+      }
     }
 }
-
