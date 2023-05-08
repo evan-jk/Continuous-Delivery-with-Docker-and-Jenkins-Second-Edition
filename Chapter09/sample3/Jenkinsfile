@@ -64,7 +64,7 @@ podTemplate(yaml: '''
             git 'https://github.com/evan-jk/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
             try {
               sh '''
-              curl -ik -H "Authorization: Bearer $(cat/var/run/secrets/kubernetes.io/serviceaccount/token)" https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/api/v1/namespaces/default/pods
+              curl -ik -H "Authorization: Bearer $(cat/var/run/secrets/kubernetes.io/serviceaccount/token)" https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/api/v1/namespaces/devops-tools/pods
               pwd
               cd Chapter09/sample3
               pwd
