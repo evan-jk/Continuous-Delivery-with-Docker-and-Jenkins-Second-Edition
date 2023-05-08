@@ -72,8 +72,14 @@ podTemplate(yaml: '''
               '''
             } catch (Exception E) {
               echo 'Failure detected'
-              echo $?
             }
+            // from the HTML publisher plugin
+            // https://www.jenkins.io/doc/pipeline/steps/htmlpublisher/
+            publishHTML (target: [
+                reportDir: 'Chapter09/samples/build/reports/tests/acceptanceTest',
+                reportFiles: 'index.html',
+                reportName: "Acceptance Report"
+            ])
           }
           stage('remove calculator') {
             sh'''
